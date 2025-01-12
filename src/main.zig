@@ -3,6 +3,8 @@
 
 // Note to future self with an emit function might have a single right buffer with reference counting.
 
+// TODO: Proper timeouts and abortive closes.
+
 const std = @import("std");
 const builtin = @import("builtin");
 const Allocator = std.mem.Allocator;
@@ -104,7 +106,7 @@ const PerSocketContext = extern struct {
 pub fn main() !void {
     if (comptime builtin.os.tag != .windows) {
         @compileError("This is a windows only project");
-    } // Why this compile ???
+    }
 
     var gpa_impl = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa_impl.deinit();
@@ -252,6 +254,7 @@ pub fn main() !void {
         switch (io_context.operation) {
             .Accept => {
                 // Note client address information is somewhere in the back of the buffers and is just ignored.
+                // ws2_32.GetAcceptExSockaddrs(lpOutputBuffer: *anyopaque, dwReceiveDataLength: u32, dwLocalAddressLength: u32, dwRemoteAddressLength: u32, LocalSockaddr: **sockaddr, LocalSockaddrLength: *i32, RemoteSockaddr: **sockaddr, RemoteSockaddrLength: *i32)
 
                 // Guaranteed to unwrap since this must have come from an AcceptIOOperation
                 // Which must have an incoming socket.
