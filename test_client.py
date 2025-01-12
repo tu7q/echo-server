@@ -8,6 +8,6 @@ time.sleep(0.5)
 while True:
     msg = input()
     clientsocket.send(bytes(ascii(msg), encoding="ascii"))
-    print(f"recv: {clientsocket.recv(len(msg)).decode("ascii")}")
+    print(f"recv: {clientsocket.recv(1024).decode("ascii")}")
 
 clientsocket.close()
