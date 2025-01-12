@@ -206,8 +206,8 @@ pub fn main() !void {
     if (fnAcceptEx(
         listener,
         initial_accept_context.incoming.?,
-        &initial_accept_context.wsabuf,
-        0,
+        @ptrCast(&initial_accept_context.buffer),
+        remaining_buffer_length,
         addr_length,
         addr_length,
         &_recv_num_bytes,
@@ -337,7 +337,7 @@ pub fn main() !void {
                 if (fnAcceptEx(
                     listener,
                     new_accept_context.incoming.?,
-                    @ptrCast(&new_accept_context.wsabuf),
+                    @ptrCast(&initial_accept_context.buffer),
                     remaining_buffer_length,
                     addr_length,
                     addr_length,
