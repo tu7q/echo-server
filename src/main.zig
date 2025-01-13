@@ -34,13 +34,17 @@ const PerIOContext = extern struct {
     pub fn init(self: *@This()) !void {
         // Create a socket.
         const socket = ws2_32.WSASocketW(
-            ws2_32.AF.INET6,
+            ws2_32.AF.INET,
             ws2_32.SOCK.STREAM,
             ws2_32.IPPROTO.IP,
             null,
             0,
             ws2_32.WSA_FLAG_OVERLAPPED,
         );
+
+        // ws2_32.setsockopt(s: SOCKET, level: i32, optname: i32, optval: ?[*]const u8, optlen: i32)
+        // ws2_32.SO.RCVTIMEO
+
         // Throw an error if it was bad.
         if (socket == ws2_32.INVALID_SOCKET) {
             return error.WSAError;
@@ -104,6 +108,12 @@ const PerSocketContext = extern struct {
 };
 
 pub fn main() !void {
+    // TODO: Functionalize this better.
+    // TODO: Handle more error cases ie Listener socket closing unexpectedly etc.
+    // TODO: Add timeout handling for sockets.
+    // Cant actually do the TODO below since it doesn't make that much sense.
+    // TODO: Handling reading and writing at the same time. IE, closing socket : Checking for outstanding IO before deleting context,
+
     if (comptime builtin.os.tag != .windows) {
         @compileError("This is a windows only project");
     }
@@ -223,16 +233,28 @@ pub fn main() !void {
         var completion_key: usize = undefined;
         var overlapped: ?*windows.OVERLAPPED = undefined;
 
-        if (windows.GetQueuedCompletionStatus(
+        // if (windows.GetQueuedCompletionStatus(
+        //     iocp,
+        //     &bytes_transferred,
+        //     &completion_key,
+        //     &overlapped,
+        //     windows.INFINITE,
+        // ) != .Normal) {
+        //     // return ws2_32.WSAGetLastError();
+        //     return error.WSAError;
+        // }
+
+        GetQueuedCompletionStatus(
             iocp,
             &bytes_transferred,
             &completion_key,
             &overlapped,
             windows.INFINITE,
-        ) != .Normal) {
-            // return ws2_32.WSAGetLastError();
-            return error.WSAError;
-        }
+        ) catch |err| switch (err) {
+            error.Timeout => {},
+            error.Unexpected => unreachable, // Should only occur due to misuse of the function.
+            else => return err,
+        };
 
         // Context of the io operation.
         const io_context: *PerIOContext = @ptrCast(overlapped);
@@ -340,7 +362,7 @@ pub fn main() !void {
                 if (fnAcceptEx(
                     listener,
                     new_accept_context.incoming.?,
-                    @ptrCast(&initial_accept_context.buffer),
+                    @ptrCast(&new_accept_context.buffer),
                     remaining_buffer_length,
                     addr_length,
                     addr_length,
@@ -414,6 +436,41 @@ pub fn main() !void {
                     }
                 }
             },
+        }
+    }
+}
+
+// Because ws2_32 doesn't handle all cases we need to manually define it.
+const kernel32 = windows.kernel32;
+const UnexpectedError = std.posix.UnexpectedError;
+
+const GetQueuedCompletionStatusError = error{
+    Aborted,
+    Cancelled,
+    EOF,
+    Timeout,
+} || UnexpectedError;
+
+pub fn GetQueuedCompletionStatus(
+    completion_port: windows.HANDLE,
+    bytes_transferred_count: *windows.DWORD,
+    lpCompletionKey: *usize,
+    lpOverlapped: *?*windows.OVERLAPPED,
+    dwMilliseconds: windows.DWORD,
+) !void {
+    if (kernel32.GetQueuedCompletionStatus(
+        completion_port,
+        bytes_transferred_count,
+        lpCompletionKey,
+        lpOverlapped,
+        dwMilliseconds,
+    ) == windows.FALSE) {
+        switch (kernel32.GetLastError()) {
+            .ABANDONED_WAIT_0 => return error.Aborted,
+            .OPERATION_ABORTED => return error.Cancelled,
+            .HANDLE_EOF => return error.EOF,
+            .WAIT_TIMEOUT => return error.Timeout,
+            else => return error.Unexpected, // Should only occur if function is used incorrectly.
         }
     }
 }
