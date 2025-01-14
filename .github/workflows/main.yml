@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Test    
     steps:
-      - uses: ./.github/workflows/test.yml
+      - uses: tu7q/echo-server/.github/workflows/test.yml@main
         with:
           os: ${{ matrix.os }}
           zig: ${{ matrix.zig }}
