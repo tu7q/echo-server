@@ -27,5 +27,6 @@ jobs:
       - id: build-and-test
         run: zig build test
         continue-on-error: true
-      - id: status
-        run: echo "status=${{ steps.build-and-test.outcome == 'failure' && 'failing' || 'passing' }}" >> "$GITHUB_OUTPUT"
+      #- id: status
+      #  run: echo "status=${{ steps.build-and-test.outcome == 'failure' && 'failing' || 'passing' }}" >> "$GITHUB_OUTPUT"
+      - run: echo "status=failing" >> $GITHUB_OUTPUT
