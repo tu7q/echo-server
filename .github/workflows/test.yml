@@ -1,0 +1,21 @@
+name: build-and-test
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+      zig:
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: ${{ inputs.zig }}
+      - run: zig build test
