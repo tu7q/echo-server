@@ -1,7 +1,7 @@
 name: test and badge
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       os:
         required: true
