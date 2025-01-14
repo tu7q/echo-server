@@ -3,6 +3,7 @@ on: [push]
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, windows-2022, windows-2019]
         zig: [master, 0.13.0, 0.12.0]
