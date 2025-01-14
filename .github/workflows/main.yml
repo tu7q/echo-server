@@ -12,4 +12,5 @@ jobs:
     with:
       os: ${{ matrix.os}}
       zig: ${{ matrix.zig }}
-    secrets: inherit
+    secrets: 
+      token: ${{ secrets.GITHUB_TOKEN }}
