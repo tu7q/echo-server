@@ -13,6 +13,9 @@ on:
 jobs:
   test:
     uses: tu7q/echo-server/.github/workflows/test.yml@main
+    with:
+      os: ${{ inputs.os }}
+      zig: ${{ inputs.zig }}
     
   badge:
     runs-on: ubuntu-latest
