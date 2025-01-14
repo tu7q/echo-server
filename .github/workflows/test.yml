@@ -29,4 +29,4 @@ jobs:
         continue-on-error: true
       #- id: status
       #  run: echo "status=${{ steps.build-and-test.outcome == 'failure' && 'failing' || 'passing' }}" >> "$GITHUB_OUTPUT"
-      - run: echo "status=failing" >> $GITHUB_OUTPUT
+      - run: echo "status=failing" >> $env:GITHUB_OUTPUT
