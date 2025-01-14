@@ -1,0 +1,28 @@
+name: test and badge
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        required: true
+        type: string
+      zig:
+        required: true
+        type: string
+
+jobs:
+  test:
+    uses: tu7q/echo-server/.github/workflows/test.yml@main
+    
+  badge:
+    runs-on: ubuntu-latest
+    needs: test 
+    steps:
+      - uses: RubbaBoy/BYOB@v1.3.0
+        with:
+          NAME: test-${{ inputs.os }}-${{ inputs.zig }}
+          LABEL: test ${{ inputs.os}} zig ${{ inputs.zig }}
+          STATUS: ${{ needs.test.outputs.status }}
+          COLOR: ${{ needs.test.outputs.status == 'failing' && 'FF0000' || '00FF00' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
