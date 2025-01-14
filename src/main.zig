@@ -474,3 +474,7 @@ pub fn GetQueuedCompletionStatus(
         }
     }
 }
+
+test "no test - expect fail" {
+    try std.testing.expect(false);
+}
