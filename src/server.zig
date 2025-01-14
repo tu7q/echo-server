@@ -142,7 +142,7 @@ pub fn main() !void {
     );
 
     // Create the listening socket.
-    const address = try std.net.Address.parseIp("127.0.0.1", 5882);
+    const address = try std.net.Address.parseIp("127.0.0.1", 5882); // Hardcoded adddress I don't care
 
     const tpe = ws2_32.SOCK.STREAM;
     const protocol = ws2_32.IPPROTO.TCP;
