@@ -2,6 +2,8 @@ on: [push]
 
 jobs:
   test:
+    permissions:
+      contents: write
     name: Build and Test    
     strategy:
       fail-fast: false
