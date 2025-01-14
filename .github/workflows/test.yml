@@ -9,13 +9,23 @@ on:
       zig:
         required: true
         type: string
+    outputs:
+      status:
+        description: "Whether or not the job passed"
+        value: ${{ jobs.test.outputs.status }}
 
 jobs:
   test:
     runs-on: ${{ inputs.os }}
+    outputs:
+      status: steps.status.outputs.status
     steps:
       - uses: actions/checkout@v3
       - uses: mlugg/setup-zig@v1
         with:
           version: ${{ inputs.zig }}
-      - run: zig build test
+      - id: build-and-test
+        run: zig build test
+        continue-on-error: true
+      - id: status
+        run: echo "status=${{ steps.build-and-test.outcome == 'failure' && 'failing' || 'passing' }}" >> $GITHUB_OUTPUT
